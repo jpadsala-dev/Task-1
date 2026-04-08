@@ -1,9 +1,9 @@
 import { Router } from "express"
-import CompanyRouter from "./company.routes"
+import AuthRouter from "./auth.routes"
 
 const router = Router()
 
-router.use('/company', CompanyRouter)
+router.use('/company', AuthRouter)
 
 export default router
 

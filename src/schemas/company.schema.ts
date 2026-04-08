@@ -1,6 +1,6 @@
 import { Document, Schema } from "mongoose"
 
-interface Company extends Document {
+export interface Company extends Document {
     name: String,
     media?: Array<string>,
 }
@@ -14,7 +14,7 @@ const companySchema = new Schema<Company>({
         type: String,
         required: [true, "Company name is required"]
     },
-    media: {
-        type: Schema.Types,
-    }
+    media: [String],
 })
+
+export default companySchema
