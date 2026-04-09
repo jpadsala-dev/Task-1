@@ -1,0 +1,20 @@
+[500] Unhandled error: TypeError: Cannot destructure property 'email' of 'req.body' as it is undefined.
+    at C:\Users\PC\Desktop\Security-Managment-Server\dist\controllers\auth.controller.js:12:17
+    at C:\Users\PC\Desktop\Security-Managment-Server\dist\utils\catchAsync.js:12:25
+    at Layer.handleRequest (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\route.js:157:13)
+    at C:\Users\PC\Desktop\Security-Managment-Server\dist\middlewares\validation.middlware.js:14:9
+    at Layer.handleRequest (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\layer.js:152:17)
+TypeError: res.failed is not a function
+    at errorHandler (C:\Users\PC\Desktop\Security-Managment-Server\dist\utils\errorHandler.js:81:16)
+    at Layer.handleError (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\lib\layer.js:116:17)
+    at trimPrefix (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\index.js:340:13)
+    at C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\index.js:297:9
+    at processParams (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\index.js:582:12)
+    at Immediate.next (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\index.js:291:5)
+    at Immediate.<anonymous> (C:\Users\PC\Desktop\Security-Managment-Server\node_modules\router\index.js:688:15)
+    at process.processImmediate (node:internal/timers:506:21)

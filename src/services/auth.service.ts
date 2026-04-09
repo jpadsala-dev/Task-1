@@ -1,81 +1,29 @@
-import userModel from "../models/user.model"
-import { User } from "../schemas/user.schema"
+import userRepo from "../repository/user.repository"
+import { AppError } from "../utils/appError"
+import { passwrodHashUtils } from "../utils/bcrypt.utils"
 
 const service = {
     register(arg: { email: string, password: string, name: string, profile?: string, phone: string, media?: Array<string>, }) {
 
     },
 
-    login(arg: { email: string; password: string }): User | null {
+    async login(arg: { email: string; password: string }): Promise<Object | null> {
 
-        const results = userModel.aggregate([
-            {
-                $match: {
-                    email: arg.email,
-                }
-            },
-            {
-                $lookup: {
-                    from: "company-details",
-                    localField: "refId",
-                    foreignField: "_id",
-                    as: "companyProfile",
-                }
-            },
-            {
-                $lookup: {
-                    from: "guard-details",
-                    localField: "refId",
-                    foreignField: "_id",
-                    as: "guardProfile",
-                }
-            },
-            {
-                $lookup: {
-                    from: "client-details",
-                    localField: "refId",
-                    foreignField: "_id",
-                    as: "clientProfile",
-                }
-            },
-            {
-                $addFields: {
-                    profile: {
-                        $switch: {
-                            branches: [
-                                {
-                                    case: { $eq: ["$role", "company"] },
-                                    then: { $arrayElemAt: ["$companyProfile", 0] },
-                                },
-                                {
-                                    case: { $eq: ["$role", "guard"] },
-                                    then: { $arrayElemAt: ["$guardProfile", 0] },
-                                },
-                                {
-                                    case: { $eq: ["$role", "client"] },
-                                    then: { $arrayElemAt: ["$clientProfile", 0] },
-                                },
-                            ],
-                            default: null,
-                        }
-                    }
-                }
-            },
-            {
-                $project: {
-                    companyProfile: 0,
-                    guardProfile: 0,
-                    clientProfile: 0,
-                }
-            },
-            { $limit: 1 }
-        ])
+        var result = await userRepo.findByEmail(arg.email)
+
+        console.log(result)
 
 
+        if (result !== null) {
+            const isMatch = await passwrodHashUtils.compareValue(arg.password, (result as any).password as string)
 
-        return null
+            if (isMatch) {
+                return result
+            }
 
+        }
 
+        throw new AppError("Invalid email or password", 401)
     },
 }
 

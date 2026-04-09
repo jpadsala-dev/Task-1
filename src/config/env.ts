@@ -26,8 +26,17 @@ function _getJwtSecrate(): string {
     return JWT_SECRATE
 }
 
+function _getPasswordHashSecrate(): string {
+    const PASSWORD_HASH_SECRATE = process.env.PASSWORD_HASH_SECRATE
+    if (!PASSWORD_HASH_SECRATE) {
+        throw new Error("PASSWORD_HASH_SECRATE environment variable is not set.")
+    }
+    return PASSWORD_HASH_SECRATE
+}
+
 export default {
     mongoose_url: _getMongoDbUrl(),
     port: _getPort(),
     jwtSecrate: _getJwtSecrate(),
+    passwordHasSecrate: _getPasswordHashSecrate(),
 }

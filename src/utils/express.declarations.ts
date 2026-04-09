@@ -13,26 +13,27 @@ declare global {
     }
 }
 
-function success<T>(this: Response, arg: _IResponseParams<T>): Response {
-    const { data, statusCode = 200, message = 'Success', version } = arg
-    return this.status(statusCode).json({
-        data,
-        message,
-        version,
-    })
-}
-(Response.prototype as any).success = success
+const init = () => {
+    function success<T>(this: Response, arg: _IResponseParams<T>): Response {
+        const { data, statusCode = 200, message = 'Success', version } = arg
+        return this.status(statusCode).json({
+            data,
+            message,
+            version,
+        })
+    }
+    (Response.prototype as any).success = success
 
-function failed<T>(this: Response, arg: _IResponseParams<T>): Response {
-    const { data, statusCode = 500, message = 'Failed!', version } = arg
-    return this.status(statusCode).json({
-        data,
-        message,
-        version,
-    })
+    function failed<T>(this: Response, arg: _IResponseParams<T>): Response {
+        const { data, statusCode = 500, message = 'Failed!', version } = arg
+        return this.status(statusCode).json({
+            data,
+            message,
+            version,
+        })
+    }
+    (Response.prototype as any).failed = failed
 }
-(Response.prototype as any).failed = failed
-
 
 interface _IResponseParams<T> {
     data: T
@@ -41,5 +42,4 @@ interface _IResponseParams<T> {
     version?: string
 }
 
-export { };
-
+export default init

@@ -4,8 +4,14 @@ export interface User extends Document {
     email: String,
     password?: String | null,
     passwordHash?: String | null,
-    role: "company" | "client" | "guard"
+    role: UserRole
     phone: String,
+}
+
+enum UserRole {
+    company = "company",
+    client = "client",
+    guard = "guard",
 }
 
 const userSchema = new Schema<User>({
@@ -24,7 +30,7 @@ const userSchema = new Schema<User>({
     role: {
         type: String,
         required: [true, "Role is required"],
-        enum: ["company", "client", "guard"]
+        enum: Object.values(UserRole),
     },
     phone: {
         type: String,

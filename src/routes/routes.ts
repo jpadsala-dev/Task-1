@@ -3,7 +3,6 @@ import AuthRouter from "./auth.routes"
 
 const router = Router()
 
-router.use('/company', AuthRouter)
+router.use(AuthRouter)
 
 export default router
-

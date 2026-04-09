@@ -14,7 +14,7 @@ export function errorHandler(
     if (err.debugMessage) {
       console.error(`[AppError ${err.statusCode}] ${err.debugMessage}`)
     }
-    return res.failed({
+    return sendFailed(res, {
       data: { status: "error", error: err.message },
       statusCode: err.statusCode,
     })
@@ -27,7 +27,7 @@ export function errorHandler(
     }))
 
     console.error("[JoiValidation 400]", fields)
-    return res.failed({
+    return sendFailed(res, {
       data: { status: "validation_error", error: "Validation failed", fields },
       statusCode: 400,
     })
@@ -40,7 +40,7 @@ export function errorHandler(
     }))
 
     console.error("[MongooseValidation 400]", fields)
-    return res.failed({
+    return sendFailed(res, {
       data: { status: "validation_error", error: "Database validation failed", fields },
       statusCode: 400,
     })
@@ -48,7 +48,7 @@ export function errorHandler(
 
   if (err instanceof MongooseError.CastError) {
     console.error(`[CastError 400] Path: ${err.path}, Value: ${err.value}`)
-    return res.failed({
+    return sendFailed(res, {
       data: {
         status: "error",
         error: `Invalid value for field '${err.path}': ${String(err.value)}`,
@@ -62,7 +62,7 @@ export function errorHandler(
     const field = Object.keys(keyValue)[0] ?? "field"
     const value = keyValue[field]
     console.error(`[DuplicateKey 409] ${field}: ${value}`)
-    return res.failed({
+    return sendFailed(res, {
       data: { status: "error", error: `'${value}' is already taken for '${field}'.` },
       statusCode: 409,
     })
@@ -72,7 +72,7 @@ export function errorHandler(
     const name = (err as any).name as string
     const isExpired = name === "TokenExpiredError"
     console.error(`[JWT 401] ${name}`)
-    return res.failed({
+    return sendFailed(res, {
       data: {
         status: "error",
         error: isExpired ? "Token has expired" : "Invalid or malformed token",
@@ -83,16 +83,34 @@ export function errorHandler(
 
   if (err instanceof SyntaxError && "body" in err) {
     console.error("[SyntaxError 400] Malformed JSON body")
-    return res.failed({
+    return sendFailed(res, {
       data: { status: "error", error: "Invalid JSON in request body" },
       statusCode: 400,
     })
   }
 
   console.error("[500] Unhandled error:", err)
-  return res.failed({
+  return sendFailed(res, {
     data: { status: "error", error: "Internal Server Error" },
     statusCode: 500,
+  })
+}
+
+export function sendFailed<T>(
+  res: Response,
+  arg: { data: T; statusCode?: number; message?: string; version?: string },
+) {
+  console.log("Landed to ErroHandler")
+
+  if (typeof (res as any).failed === "function") {
+    return (res as any).failed(arg)
+  }
+
+  const { data, statusCode = 500, message = "Failed!", version } = arg
+  return res.status(statusCode).json({
+    data,
+    message,
+    version,
   })
 }
 
