@@ -4,11 +4,16 @@ export interface Guard extends Document {
     name: String,
     profile: String,
     availability: Array<Days>,
-    employmentType: "full-time" | "part-time",
+    employmentType: EmploymentType,
     maxHoursPerWeek: Number,
 }
 
-enum Days {
+export enum EmploymentType {
+    FullTime = "full-time",
+    PartTime = "part-time"
+}
+
+export enum Days {
     Mon = "mon",
     Tue = "tue",
     Wed = "wed",
@@ -35,7 +40,7 @@ const guardSchema = new Schema<Guard>(
         },
         employmentType: {
             type: String,
-            enum: ["full-time", "part-time"],
+            enum: EmploymentType,
             required: true,
         },
         maxHoursPerWeek: {

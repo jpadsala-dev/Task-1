@@ -1,22 +1,34 @@
 import { NextFunction, Request, Response } from "express"
 import service from "../services/auth.service"
-import { AppError } from "../utils/appError"
 import catchAsync from "../utils/catchAsync"
 
 const controller = {
-    registerHandler: (req: Request, res: Response, next: NextFunction) => {
-        res.end("Good!")
+    registerHandler: async (req: Request, res: Response, next: NextFunction) => {
+        const { email, password, name, phone, availability, employmentType, maxHoursPerWeek, role } = req.body
+        
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+        const profile = files?.profile?.[0]?.filename;
+        const media = files?.media;
+
+        var data = await service.register({
+            email,
+            password,
+            name,
+            phone,
+            profile,
+            media,
+            availability,
+            employmentType,
+            maxHoursPerWeek,
+            role
+        })
+
+        return res.success({ data })
     },
 
     loginHandler:
         catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-
             const { email, password } = req.body ?? {}
-            console.log("Reached here!")
-
-            if (!email || !password) {
-                throw new AppError("Email and password are required", 400)
-            }
 
             const data = await service.login({ email, password })
 

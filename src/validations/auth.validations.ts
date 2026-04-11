@@ -1,8 +1,8 @@
 import Joi from "joi"
 
-const fileSchema = (fieldName?: string) => Joi.object({
+const _fileSchema = (fieldName?: string) => Joi.object({
     fieldname: fieldName ? Joi.string().valid(fieldName) : Joi.optional(),
-    originalname: Joi.string()
+    /* originalname: Joi.string()
         .required()
         .messages({
             "string.base": "Original name must be a string.",
@@ -32,11 +32,19 @@ const fileSchema = (fieldName?: string) => Joi.object({
             "string.base": "Path must be a string.",
             "string.empty": "Path must not be empty.",
             "any.required": "Path is required."
-        }),
+        }), */
 })
 
 
-const filesSchema = (fieldName?: string) => Joi.array().items({ fieldName: fileSchema(fieldName) })
+const fileSchema = (fieldName: Array<string>) => {
+    const object: any = {}
+
+    for (const element of fieldName) {
+        object[element] = _fileSchema(element).required()
+    }
+
+    return Joi.object(object)
+}
 
 const emailAndPasswordFields = {
     email: Joi.string()
@@ -122,29 +130,23 @@ const authValidator = {
                     "string.max": "Phone must be at most 20 characters long.",
                     "any.required": "Phone is required."
                 }),
-            files: Joi.array()
-                .items(fileSchema())
-                .messages({
-                    "array.base": "Files must be an array."
-                })
+            files: {
+                profile: Joi.any(),
+                media: Joi.any(),
+            }
         }
     ).when(
         Joi.object({ role: Joi.valid("guard", "client") }),
         {
             then: Joi.object({
-                files: filesSchema("profile")
-                    .min(1)
-                    .required()
-                    .messages({
-                        "array.base": "Files must be an array.",
-                        "array.min": "At least one profile file is required for guards and clients.",
-                        "any.required": "Profile file is required for guards and clients."
-                    }),
+                files: {
+                    profile: Joi.required().messages({
+                        "any.required": "Profile image is required for guards and clients."
+                    })
+                }
             }),
             otherwise: Joi.object({
-                files: filesSchema("media").optional().messages({
-                    "array.base": "Files must be an array."
-                }),
+                files: { profile: Joi.forbidden() }
             })
         }
     ).when(
@@ -167,6 +169,15 @@ const authValidator = {
                 employmentType: Joi.forbidden(),
                 maxHoursPerWeek: Joi.forbidden(),
             }),
+        }
+    ).when(
+        Joi.object({ role: Joi.valid("company") }),
+        {
+            otherwise: {
+                files: {
+                    media: Joi.forbidden()
+                }
+            }
         }
     ),
 

@@ -1,10 +1,38 @@
 import userRepo from "../repository/user.repository"
+import { Days, EmploymentType } from "../schemas/guard.shcema"
+import { UserRole } from "../schemas/user.schema"
 import { AppError } from "../utils/appError"
 import { passwrodHashUtils } from "../utils/bcrypt.utils"
 
 const service = {
-    register(arg: { email: string, password: string, name: string, profile?: string, phone: string, media?: Array<string>, }) {
+    async register(arg: {
+        email: string,
+        password: string,
+        name: string,
+        profile?: string,
+        phone: string,
+        role: UserRole,
+        media?: Express.Multer.File[],
+        availability?: Array<Days>,
+        maxHoursPerWeek?: number,
+        employmentType?: EmploymentType
+    }) {
+        let response: Object | null;
+        var result = await userRepo.createUser(arg.role, arg.email, arg.password, arg.name, arg.phone)
 
+        switch (arg.role) {
+            case UserRole.client:
+                response = await result.createClient(arg.profile!);
+                break
+            default:
+                response = null
+                break
+        }
+
+        console.log(response)
+
+
+        return response
     },
 
     async login(arg: { email: string; password: string }): Promise<Object | null> {

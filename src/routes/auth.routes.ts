@@ -27,7 +27,6 @@ const storage = multer.diskStorage({
 
 const mediaAwareFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     // If the field name is "media", accept all files (no filter)
-    console.log("Reached to multer filter!")
 
     if (file.fieldname === "media") {
         cb(null, true)
@@ -49,7 +48,7 @@ AuthRouter.post(
         { name: 'profile', maxCount: 1 },
         { name: 'media', maxCount: 10 }, // adjust maxCount as needed
     ]),
-    validate(authValidator.register),
+    validate(authValidator.register, ["body"], "files"),
     controller.registerHandler
 )
 

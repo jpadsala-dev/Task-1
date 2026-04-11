@@ -1,4 +1,4 @@
-import type { Response } from 'express'
+import express, { Response } from 'express'
 
 declare global {
     namespace Express {
@@ -22,7 +22,7 @@ const init = () => {
             version,
         })
     }
-    (Response.prototype as any).success = success
+    (express.response as any).success = success
 
     function failed<T>(this: Response, arg: _IResponseParams<T>): Response {
         const { data, statusCode = 500, message = 'Failed!', version } = arg
@@ -32,7 +32,7 @@ const init = () => {
             version,
         })
     }
-    (Response.prototype as any).failed = failed
+    (express.response as any).failed = failed
 }
 
 interface _IResponseParams<T> {

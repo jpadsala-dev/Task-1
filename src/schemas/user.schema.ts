@@ -8,7 +8,7 @@ export interface User extends Document {
     phone: String,
 }
 
-enum UserRole {
+export enum UserRole {
     company = "company",
     client = "client",
     guard = "guard",
