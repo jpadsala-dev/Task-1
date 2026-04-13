@@ -2,10 +2,6 @@ import express, { Response } from 'express'
 
 declare global {
     namespace Express {
-        interface Request {
-            auth?: Record<string, unknown>
-        }
-
         interface Response {
             success<T>(arg: _IResponseParams<T>): this
             failed<T>(arg: _IResponseParams<T>): this

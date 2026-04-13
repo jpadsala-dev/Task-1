@@ -14,6 +14,8 @@ class BcryptUtils {
     }
 
     async compareValue(value: string, hash: string): Promise<boolean> {
+        console.log(value + this.secretKey, "comapre with", hash);
+
         return await bcrypt.compare(value + this.secretKey, hash)
     }
 }

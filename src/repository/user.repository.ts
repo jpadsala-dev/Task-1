@@ -1,17 +1,19 @@
+import mongoose from "mongoose"
 import clientModel from "../models/client.model"
 import companyModel from "../models/company.model"
 import guardModel from "../models/guard.model"
 import userModel from "../models/user.model"
+
 import { Days, EmploymentType } from "../schemas/guard.shcema"
 import { UserRole } from "../schemas/user.schema"
 import { passwrodHashUtils } from "../utils/bcrypt.utils"
 
 const userRepo = {
-    async createUser(role: UserRole, email: string, password: string, name: string, phone: string) {
+    async createUser(role: UserRole, email: string, password: string, name: string, phone: string, session: mongoose.mongo.ClientSession) {
         // create password hash with generateHash method of bcrypt
         const passwordHash = await passwrodHashUtils.generateHash(password)
 
-        const result = await userModel.create({
+        const result = new userModel({
             email,
             password,
             passwordHash,
@@ -19,13 +21,17 @@ const userRepo = {
             role,
         })
 
+        await result.save({ session })
+
         return {
             async createClient(profile: string) {
-                const clientResult = await clientModel.create({
+                const clientResult = new clientModel({
                     _id: result._id,
                     name: name,
                     profile: profile,
                 })
+
+                await clientResult.save({ session })
 
                 return {
                     ...result.toObject(),
@@ -34,7 +40,7 @@ const userRepo = {
             },
 
             async createGuard(availability: Array<Days>, employmentType: EmploymentType, maxHoursPerWeek: number, profile: string,) {
-                const guradResult = await guardModel.create({
+                const guradResult = new guardModel({
                     _id: result._id,
                     name: name,
                     profile: profile,
@@ -43,18 +49,22 @@ const userRepo = {
                     maxHoursPerWeek: maxHoursPerWeek,
                 })
 
+                await guradResult.save({ session })
+
                 return {
                     ...result.toObject(),
                     ...guradResult.toObject(),
                 }
             },
 
-            async createCompany(media: Array<string>) {
-                const companyResult = await companyModel.create({
+            async createCompany(media: Express.Multer.File[]) {
+                const companyResult = new companyModel({
                     _id: result._id,
                     name: name,
-                    media: media,
+                    media: media.map((file) => file.path),
                 })
+
+                await companyResult.save({ session })
 
                 return {
                     ...result.toObject(),
@@ -76,7 +86,7 @@ const userRepo = {
             {
                 $lookup: {
                     from: "company-details",
-                    localField: "refId",
+                    localField: "_id",
                     foreignField: "_id",
                     as: "companyProfile",
                 }
@@ -84,7 +94,7 @@ const userRepo = {
             {
                 $lookup: {
                     from: "guard-details",
-                    localField: "refId",
+                    localField: "_id",
                     foreignField: "_id",
                     as: "guardProfile",
                 }
@@ -92,7 +102,7 @@ const userRepo = {
             {
                 $lookup: {
                     from: "client-details",
-                    localField: "refId",
+                    localField: "_id",
                     foreignField: "_id",
                     as: "clientProfile",
                 }

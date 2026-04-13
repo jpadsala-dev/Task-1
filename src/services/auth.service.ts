@@ -1,10 +1,12 @@
+import mongoose from "mongoose"
 import userRepo from "../repository/user.repository"
 import { Days, EmploymentType } from "../schemas/guard.shcema"
 import { UserRole } from "../schemas/user.schema"
 import { AppError } from "../utils/appError"
 import { passwrodHashUtils } from "../utils/bcrypt.utils"
+import { jwtUtils } from "../utils/jwt.utils"
 
-const service = {
+const authService = {
     async register(arg: {
         email: string,
         password: string,
@@ -17,42 +19,62 @@ const service = {
         maxHoursPerWeek?: number,
         employmentType?: EmploymentType
     }) {
-        let response: Object | null;
-        var result = await userRepo.createUser(arg.role, arg.email, arg.password, arg.name, arg.phone)
+        const session = await mongoose.startSession()
+        session.startTransaction()
 
-        switch (arg.role) {
-            case UserRole.client:
-                response = await result.createClient(arg.profile!);
-                break
-            default:
-                response = null
-                break
+        try {
+            let response: Object | null
+            var result = await userRepo.createUser(arg.role, arg.email, arg.password, arg.name, arg.phone, session)
+
+            switch (arg.role) {
+                case UserRole.client:
+                    response = await result.createClient(arg.profile!)
+                    break
+                case UserRole.guard:
+                    response = await result.createGuard(arg.availability!, arg.employmentType!, arg.maxHoursPerWeek!, arg.profile!)
+                    break
+                case UserRole.company:
+                    response = await result.createCompany(arg.media!)
+                    break
+                default:
+                    response = null
+                    break
+            }
+
+            await session.commitTransaction()
+            console.log(response)
+            return response
+        } catch (error) {
+            await session.abortTransaction()
+            throw error
+        } finally {
+            await session.endSession()
         }
-
-        console.log(response)
-
-
-        return response
     },
 
-    async login(arg: { email: string; password: string }): Promise<Object | null> {
+    async login(arg: { email: string; password: string }): Promise<{ token: string; user: Object }> {
 
         var result = await userRepo.findByEmail(arg.email)
 
-        console.log(result)
+        console.log("result", result)
 
 
         if (result !== null) {
-            const isMatch = await passwrodHashUtils.compareValue(arg.password, (result as any).password as string)
+            console.log()
+            const isMatch = await passwrodHashUtils.compareValue(arg.password, (result as any).passwordHash)
 
             if (isMatch) {
-                return result
+                const token = jwtUtils.generateToken({
+                    id: (result as any)._id.toString(),
+                    email: (result as any).email,
+                    role: (result as any).role,
+                })
+                return { token, user: result }
             }
-
         }
 
         throw new AppError("Invalid email or password", 401)
     },
 }
 
-export default service
+export default authService

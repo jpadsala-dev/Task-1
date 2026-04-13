@@ -1,4 +1,4 @@
-import { Schema } from "mongoose"
+import { Document, Schema } from "mongoose"
 
 export interface Guard extends Document {
     name: String,
@@ -47,7 +47,8 @@ const guardSchema = new Schema<Guard>(
             type: Number,
             required: true,
         }
-    }
+    },
+    { timestamps: true }
 )
 
 export default guardSchema
